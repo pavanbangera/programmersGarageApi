@@ -100,4 +100,14 @@ router.post("/loginUser", [
     }
 })
 
+router.get("/countUser", async (req, res) => {
+    try {
+        const count = await users.countDocuments();
+        res.send(count.toString());
+    } catch (err) {
+        console.log("Some error occurred");
+        return res.status(500).send("Something happened");
+    }
+});
+
 module.exports = router
