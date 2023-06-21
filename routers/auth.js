@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt")
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const fetchUserData = require('../midleware/fetchUserData')
+const sendEmail = require('../midleware/sendEmail')
 
 router.post("/loginAdmin", async (req, res) => {
     let success = false;
@@ -51,13 +52,16 @@ router.post('/createUser', [
         })
         user = await users.findOne({ email: req.body.email });
         //create private token for authentication...hereb 'notebook is secrete sign
-        const data = {
-            user: {
-                id: user.id
-            }
-        }
-        var authToken = jwt.sign(data, 'pavan');
-        res.send({ success: true, authToken, id: user.id })
+        // const data = {
+        //     user: {
+        //         id: user.id
+        //     }
+        // }
+        // var authToken = jwt.sign(data, 'pavan');
+        // res.send({ success: true, authToken, id: user.id })
+        const url = `${process.env.BASE_URL}user/verify/${user.id}`;
+        await sendEmail(user.email, "Verify Email", url);
+        res.send({ success: true, msg: " An Email sent to your account please verify" })
     }
 
     catch (err) {
@@ -82,17 +86,26 @@ router.post("/loginUser", [
         if (!user) {
             return res.status(400).send({ error: "Incorrect credentials" })
         }
-        const passCompare = bcrypt.compareSync(password, user.password)
-        if (!passCompare) {
-            return res.status(400).send({ error: "Incorrect credentials" })
-        }
-        const data = {
-            user: {
-                id: user.id
+        else {
+            if (user.verified === false) {
+                const url = `${process.env.BASE_URL}user/verify/${user.id}`;
+                await sendEmail(user.email, "Verify Email", url);
+                return res.send({ success: false, msg: " An Email sent to your account please verify" })
+            } else {
+                const passCompare = bcrypt.compareSync(password, user.password)
+                if (!passCompare) {
+                    return res.status(400).send({ error: "Incorrect credentials" })
+                }
+                const data = {
+                    user: {
+                        id: user.id
+                    }
+                }
+                var authToken = jwt.sign(data, 'pavan');
+                res.send({ success: true, authToken, id: user.id })
             }
         }
-        var authToken = jwt.sign(data, 'pavan');
-        res.send({ success: true, authToken, id: user.id })
+
     }
     catch (err) {
         console.log("Some error occures")
@@ -109,5 +122,22 @@ router.get("/countUser", async (req, res) => {
         return res.status(500).send("Something happened");
     }
 });
+router.get('/verify/:id', async (req, res) => {
+
+    try {
+        const verify = await users.findById(req.params.id)
+        if (verify) {
+            const update = await users.findByIdAndUpdate(req.params.id, { verified: true }, { new: true })
+            res.status(200).send({ success: true, update })
+        }
+        else {
+            res.status(404).send({ success: false })
+        }
+    }
+    catch (err) {
+        console.log("Some error occurred");
+        return res.status(500).send({ success: false });
+    }
+})
 
 module.exports = router

@@ -17,6 +17,7 @@ const UserSchema = new Schema({
     date: {
         type: Date,
         default: new Date
-    }
+    },
+    verified: { type: Boolean, default: false },
 });
 module.exports = mongoose.model('users', UserSchema);
