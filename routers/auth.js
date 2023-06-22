@@ -131,7 +131,46 @@ router.get('/verify/:id', async (req, res) => {
             res.status(200).send({ success: true, update })
         }
         else {
-            res.status(404).send({ success: false })
+            return res.status(404).send({ success: false })
+        }
+    }
+    catch (err) {
+        console.log("Some error occurred");
+        return res.status(500).send({ success: false });
+    }
+})
+router.post('/forgot', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const verify = await users.findOne({ email })
+        if (verify) {
+            const url = `${process.env.BASE_URL}user/change-password/${verify.id}`;
+            await sendEmail(verify.email, "Change password", url);
+            return res.status(200).send({ success: true, msg: " An Email sent to your account checkout" })
+        }
+        else {
+
+            return res.status(404).send({ success: false })
+        }
+    }
+    catch (err) {
+        console.log("Some error occurred");
+        return res.status(500).send({ success: false });
+    }
+})
+router.post('/Changepassword', async (req, res) => {
+    const { id, password } = req.body;
+
+    try {
+        const verify = await users.findById(id)
+        if (verify) {
+            const salt = bcrypt.genSaltSync(10);
+            const passHash = bcrypt.hashSync(password, salt)
+            await users.findByIdAndUpdate(id, { password: passHash }, { new: true })
+            return res.status(200).send({ success: true })
+        } else {
+            return res.status(400).send({ success: false })
         }
     }
     catch (err) {
