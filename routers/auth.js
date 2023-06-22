@@ -12,14 +12,14 @@ router.post("/loginAdmin", async (req, res) => {
     const { email, password } = req.body;
     try {
         if (email === "admin@gmail.com" && password === "admin") {
-            res.send({ success: true })
+            return res.send({ success: true })
         } else {
-            res.send("Incredentials")
+            return res.send({ success: false, msg: "Unautherized User" })
         }
     }
     catch (err) {
         console.log("Some error occures")
-        return res.status(500).send("somthing happend")
+        return res.status(500).send({ success: false, msg: "somthing happend" })
     }
 })
 

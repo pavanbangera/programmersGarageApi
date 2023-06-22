@@ -12,7 +12,11 @@ router.post("/addCourse", async (req, res) => {
             description,
             cover: files
         })
-        res.send(saveCourse)
+        if (saveCourse)
+            return res.status(200).send(saveCourse)
+        else {
+            return res.status(400).send(saveCourse)
+        }
     }
     catch (err) {
         console.log("Some error occures")

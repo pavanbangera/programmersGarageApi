@@ -14,7 +14,11 @@ router.post("/addLession", async (req, res) => {
             description,
             link
         })
-        res.send(saveLession)
+        if (saveLession)
+            return res.status(200).send(saveLession)
+        else {
+            return res.status(400).send(saveLession)
+        }
     }
     catch (err) {
         console.log("Some error occures")

@@ -9,7 +9,12 @@ router.post("/addBlog", async (req, res) => {
             title,
             content
         })
-        res.send(saveBlog)
+        if (saveBlog)
+            return res.status(200).send(saveBlog)
+        else {
+            return res.status(400).send(saveBlog)
+        }
+
     }
     catch (err) {
         console.log("Some error occures")

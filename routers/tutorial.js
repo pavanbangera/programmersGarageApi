@@ -10,7 +10,11 @@ router.post("/addtutorial", async (req, res) => {
             image,
             content
         })
-        res.send(saveTutorial)
+        if (saveTutorial)
+            return res.status(200).send(saveTutorial)
+        else {
+            return res.status(400).send(saveTutorial)
+        }
     }
     catch (err) {
         console.log("Some error occures")
