@@ -140,4 +140,19 @@ router.delete('/deletecomment/:id', async (req, res) => {
     }
 })
 
+router.post('/findLessionsComments',
+    async (req, res) => {
+        try {
+            const comments = await comment.find({ lession: { $exists: true } }).populate('user', 'email',).sort({ date: -1 })
+            if (comments) {
+                res.status(200).json(comments)
+            } else {
+                res.status(404).json(comments)
+            }
+            // res.status(200).json(comments)
+        } catch (error) {
+            res.status(500).json("Internal server error");
+        }
+    });
+
 module.exports = router
